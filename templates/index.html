@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Simple Chat</title>
+    <link rel="stylesheet" href="/assets/css/styles.css">
+    <script>
+        const API_VERSION = "{{ api_version }}";
+    </script>
+</head>
+<body>
+<div id="login" style="text-align: center; margin-top: 20px;">
+    <label for="usernameInput"></label><input type="text" id="usernameInput" placeholder="Enter your username">
+    <button onclick="setUsername()">Join Chat</button>
+</div>
+
+<div id="chat" style="display: none;">
+    <h1>Welcome <span id="usernameDisplay"></span></h1>
+
+    <div class="chat-box" id="messages">
+        <!-- for messages -->
+    </div>
+
+    <div class="message-input">
+        <label for="messageInput"></label><input type="text" id="messageInput" placeholder="Type your message...">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script src="/assets/js/chat.js"></script>
+</body>
+</html>
