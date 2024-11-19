@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 env:
-  AWS_REGION: ${{ vars.AWS_REGION }}
+  AWS_REGION: ${{ secrets.AWS_REGION }}
   STACK_NAME: ec2-docker-stack
 
 jobs:
@@ -23,8 +23,8 @@ jobs:
     - name: Configure AWS Credentials
       uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: ${{ vars.AWS_ROLE_ARN }}
-        aws-region: ${{ vars.AWS_REGION }}
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ secrets.AWS_REGION }}
 
     - name: Deploy CloudFormation stack
       uses: aws-actions/aws-cloudformation-github-deploy@v1
@@ -32,8 +32,8 @@ jobs:
         name: ${{ env.STACK_NAME }}
         template: cloudformation/ec2-docker.yml
         parameter-overrides: >-
-          KeyName=${{ vars.EC2_KEY_PAIR }},
-          ECRImageURI=${{ vars.ECR_IMAGE_URI }}
+          KeyName=${{ secrets.EC2_KEY_PAIR }},
+          ECRImageURI=${{ secrets.ECR_IMAGE_URI }}
         capabilities: CAPABILITY_IAM
         no-fail-on-empty-changeset: "1"
 
