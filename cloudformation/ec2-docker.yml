@@ -46,7 +46,7 @@ Resources:
           # Pull and run the container
           aws ecr get-login-password --region ${AWS::Region} | docker login --username AWS --password-stdin ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com
           docker pull ${ECRImageURI}
-          docker run -d -p 80:8080 ${ECRImageURI}
+          docker run -d -p 80:8000 ${ECRImageURI}
 
   SecurityGroup:
     Type: AWS::EC2::SecurityGroup
