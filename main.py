@@ -46,8 +46,8 @@ async def get_messages():
 async def create_message(message: Message):
     """Create a new message"""
     message_dict = {
-        "content": message.content,
         "username": message.username,
+        "content": message.content,
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 

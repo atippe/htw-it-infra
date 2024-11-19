@@ -1,4 +1,6 @@
-fastapi
+fastapi~=0.115.4
 uvicorn
-jinja2
+jinja2~=3.1.4
 websockets
+
+pydantic~=2.9.2
