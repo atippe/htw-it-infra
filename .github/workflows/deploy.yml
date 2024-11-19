@@ -1,0 +1,44 @@
+name: Deploy EC2 Instance
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION }}
+  STACK_NAME: ec2-docker-stack
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+        aws-region: ${{ vars.AWS_REGION }}
+
+    - name: Deploy CloudFormation stack
+      uses: aws-actions/aws-cloudformation-github-deploy@v1
+      with:
+        name: ${{ env.STACK_NAME }}
+        template: cloudformation/ec2-docker.yml
+        parameter-overrides: >-
+          KeyName=${{ vars.EC2_KEY_PAIR }},
+          ECRImageURI=${{ vars.ECR_IMAGE_URI }}
+        capabilities: CAPABILITY_IAM
+        no-fail-on-empty-changeset: "1"
+
+    - name: Get CloudFormation outputs
+      run: |
+        OUTPUTS=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query 'Stacks[0].Outputs' --output json)
+        echo "Stack Outputs:"
+        echo "$OUTPUTS" | jq '.'
