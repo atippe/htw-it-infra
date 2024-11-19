@@ -12,6 +12,12 @@ jobs:
       contents: read
 
     steps:
+    - name: Debug Info
+      run: |
+        echo "Repository: ${{ github.repository }}"
+        echo "Actor: ${{ github.actor }}"
+        echo "Ref: ${{ github.ref }}"
+  
     - name: Checkout code
       uses: actions/checkout@v4
 
