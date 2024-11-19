@@ -36,7 +36,16 @@ jobs:
           ECRImageURI=${{ secrets.ECR_IMAGE_URI }}
         capabilities: CAPABILITY_IAM
         no-fail-on-empty-changeset: "1"
-        on-failure: DELETE
+        disable-rollback: true
+
+    - name: Debug if failed
+      if: ${{ failure() }}
+      run: |
+        echo "Checking CloudFormation events..."
+        aws cloudformation describe-stack-events \
+          --stack-name ${{ env.STACK_NAME }} \
+          --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceStatusReason]' \
+          --output table
 
     - name: Get CloudFormation outputs
       run: |
