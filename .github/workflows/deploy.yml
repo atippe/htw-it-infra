@@ -36,6 +36,7 @@ jobs:
           ECRImageURI=${{ secrets.ECR_IMAGE_URI }}
         capabilities: CAPABILITY_IAM
         no-fail-on-empty-changeset: "1"
+        on-failure: DELETE
 
     - name: Get CloudFormation outputs
       run: |
