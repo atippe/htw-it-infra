@@ -29,14 +29,35 @@ function connectWebSocket() {
     ws = new WebSocket(`ws://${window.location.host}/api/${API_VERSION}/ws/${username}`);
 
     ws.onmessage = function (event) {
-        const message = JSON.parse(event.data);
-        appendMessage(message);
+        const data = JSON.parse(event.data);
+
+        if (data.type === "connection_info") {
+            const instanceInfo = document.getElementById('instance-info') || createInstanceInfoElement();
+            instanceInfo.innerText = `Connected to: ${data.instance_info.instance_id} (${data.instance_info.availability_zone})`;
+        } else {
+            appendMessage(data);
+        }
     };
 
     ws.onclose = function () {
+        const instanceInfo = document.getElementById('instance-info');
+        if (instanceInfo) {
+            instanceInfo.innerText = 'Disconnected - Reconnecting...';
+        }
         setTimeout(connectWebSocket, 1000);
     };
 }
+
+function createInstanceInfoElement() {
+    const instanceInfo = document.createElement('div');
+    instanceInfo.id = 'instance-info';
+    instanceInfo.style.padding = '10px';
+    instanceInfo.style.backgroundColor = '#f0f0f0';
+    instanceInfo.style.marginBottom = '10px';
+    document.querySelector('#chat-container').prepend(instanceInfo);
+    return instanceInfo;
+}
+
 
 function appendMessage(message) {
     const messagesDiv = document.getElementById('messages');
