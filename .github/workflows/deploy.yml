@@ -33,7 +33,9 @@ jobs:
         template: cloudformation/ec2-docker.yml
         parameter-overrides: >-
           KeyName=${{ secrets.EC2_KEY_PAIR }},
-          ECRImageURI=${{ secrets.ECR_IMAGE_URI }}
+          ECRImageURI=${{ secrets.ECR_IMAGE_URI }},
+          DBUsername=${{ secrets.DB_USERNAME }},
+          DBPassword=${{ secrets.DB_PASSWORD }}
         capabilities: CAPABILITY_IAM
         no-fail-on-empty-changeset: "1"
         disable-rollback: true
