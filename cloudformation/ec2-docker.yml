@@ -10,6 +10,15 @@ Parameters:
     Type: String
     Description: Full URI of ECR image
 
+  DBUsername:
+    Type: String
+    Description: Database admin username
+
+  DBPassword:
+    Type: String
+    Description: Database admin password
+    NoEcho: true
+
 Resources:
   # VPC Configuration
   VPC:
@@ -160,7 +169,13 @@ Resources:
             # Pull and run the container
             aws ecr get-login-password --region ${AWS::Region} | docker login --username AWS --password-stdin ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com
             docker pull ${ECRImageURI}
-            docker run -d -p 80:8000 ${ECRImageURI}
+            docker run -d -p 80:8000 \
+              -e REDIS_ENDPOINT=${RedisCluster.RedisEndpoint.Address} \
+              -e DB_USERNAME=${DBUsername} \
+              -e DB_PASSWORD=${DBPassword} \
+              -e DB_NAME=postgres \
+              -e DB_ENDPOINT=${PostgresDB.Endpoint.Address} \
+              ${ECRImageURI}
 
   # Auto Scaling Group
   AutoScalingGroup:
@@ -239,6 +254,68 @@ Resources:
       Roles:
         - !Ref EC2Role
 
+  RedisSubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Subnet group for Redis cluster
+      SubnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+
+  RedisCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      Engine: redis
+      CacheNodeType: cache.t3.micro
+      NumCacheNodes: 1
+      VpcSecurityGroupIds:
+        - !Ref RedisSecurityGroup
+      CacheSubnetGroupName: !Ref RedisSubnetGroup
+
+  # PostgreSQL RDS
+  PostgresDB:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      Engine: postgres
+      DBInstanceClass: db.t3.micro
+      AllocatedStorage: 20
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+      PubliclyAccessible: false
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for RDS
+      SubnetIds:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+
+  RedisSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for Redis
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          SourceSecurityGroupId: !Ref SecurityGroup
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for RDS
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 5432
+          ToPort: 5432
+          SourceSecurityGroupId: !Ref SecurityGroup
+
 Outputs:
   LoadBalancerDNS:
     Description: DNS name of the Application Load Balancer
@@ -247,3 +324,11 @@ Outputs:
   AutoScalingGroupName:
     Description: Name of the Auto Scaling Group
     Value: !Ref AutoScalingGroup
+
+  RedisEndpoint:
+    Description: Redis cluster endpoint
+    Value: !GetAtt RedisCluster.RedisEndpoint.Address
+
+  DatabaseEndpoint:
+    Description: PostgreSQL endpoint
+    Value: !GetAtt PostgresDB.Endpoint.Address
