@@ -323,7 +323,7 @@ Outputs:
 
   AutoScalingGroupName:
     Description: Name of the Auto Scaling Group
-    Value: !Ref AutoScalingGroupc
+    Value: !Ref AutoScalingGroup
 
   RedisEndpoint:
     Description: Redis cluster endpoint
