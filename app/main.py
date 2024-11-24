@@ -1,3 +1,4 @@
+import asyncio
 from datetime import datetime
 from typing import List
 import json
@@ -198,12 +199,14 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
             await pubsub.subscribe('chat_messages')
             while True:
                 try:
-                    message = await pubsub.get_message()
+                    # Add await here and a small delay
+                    message = await pubsub.get_message(timeout=1.0)
                     if message and message['type'] == 'message':
                         await websocket.send_json(json.loads(message['data']))
+                    await asyncio.sleep(0.1)
                 except Exception as e:
                     logger.warning(f"Redis subscription error: {e}")
-                    break
+                    await asyncio.sleep(1)
         else:
             while True:
                 await websocket.receive_text()  # Keep connection alive
