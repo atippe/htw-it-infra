@@ -13,6 +13,8 @@ from pydantic import BaseModel
 from contextlib import asynccontextmanager
 import logging
 
+from starlette.websockets import WebSocketDisconnect
+
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -182,40 +184,48 @@ async def create_message(message: Message):
 
 @app.websocket(API_PREFIX + "/ws/{username}")
 async def websocket_endpoint(websocket: WebSocket, username: str):
-    await websocket.accept()
-
-    instance_info = get_instance_metadata()
-    await websocket.send_json({
-        "type": "connection_info",
-        "instance_info": instance_info,
-        "message": f"Connected to instance: {instance_info['instance_id']} in {instance_info['availability_zone']}"
-    })
-
-    chat_app.active_connections.append(websocket)
-
     try:
-        if chat_app.is_redis_available:
-            pubsub = chat_app.redis_client.pubsub()
-            await pubsub.subscribe('chat_messages')
-            while True:
-                try:
-                    # Add await here and a small delay
-                    message = await pubsub.get_message(timeout=1.0)
-                    if message and message['type'] == 'message':
-                        await websocket.send_json(json.loads(message['data']))
-                    await asyncio.sleep(0.1)
-                except Exception as e:
-                    logger.warning(f"Redis subscription error: {e}")
-                    await asyncio.sleep(1)
-        else:
-            while True:
-                await websocket.receive_text()  # Keep connection alive
-    except:
-        logger.info(f"WebSocket disconnected for user: {username}")
+        await websocket.accept()
+        logger.info(f"WebSocket connection accepted for user: {username}")
+
+        instance_info = get_instance_metadata()
+        await websocket.send_json({
+            "type": "connection_info",
+            "instance_info": instance_info,
+            "message": f"Connected to instance: {instance_info['instance_id']} in {instance_info['availability_zone']}"
+        })
+
+        chat_app.active_connections.append(websocket)
+        logger.info(f"Added connection to active_connections for user: {username}")
+
+        try:
+            if chat_app.is_redis_available:
+                pubsub = chat_app.redis_client.pubsub()
+                await pubsub.subscribe('chat_messages')
+                while True:
+                    try:
+                        message = await pubsub.get_message(timeout=1.0)
+                        if message and message['type'] == 'message':
+                            await websocket.send_json(json.loads(message['data']))
+                        await asyncio.sleep(0.1)
+                    except Exception as e:
+                        logger.error(f"Redis subscription error: {str(e)}")
+                        await asyncio.sleep(1)
+            else:
+                while True:
+                    data = await websocket.receive_text()
+                    logger.debug(f"Received message from {username}: {data}")
+        except WebSocketDisconnect:
+            logger.info(f"WebSocket disconnected normally for user: {username}")
+        except Exception as e:
+            logger.error(f"WebSocket error for user {username}: {str(e)}")
+    except Exception as e:
+        logger.error(f"Failed to establish WebSocket connection for {username}: {str(e)}")
     finally:
         if websocket in chat_app.active_connections:
             chat_app.active_connections.remove(websocket)
         await websocket.close()
+
 
 
 def get_instance_metadata():
