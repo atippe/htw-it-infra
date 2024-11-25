@@ -47,5 +47,6 @@ jobs:
 
       - name: Update ECR Image URI for CloudFormation
         run: |
-          echo "ECR_IMAGE_URI=${{ secrets.ECR_REPOSITORY_URI }}:${GITHUB_SHA}" >> $GITHUB_ENV
+          echo "ECR_IMAGE_URI=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${GITHUB_SHA}" >> $GITHUB_ENV
+
 
