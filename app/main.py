@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 import json
 import os
-import redis
+import aioredis
 import asyncpg
 from fastapi import FastAPI, WebSocket, Request
 from fastapi.staticfiles import StaticFiles
@@ -65,9 +65,8 @@ class ChatApp:
 
         # Try to connect to Redis
         try:
-            self.redis_client = redis.Redis(
-                host=os.getenv('REDIS_ENDPOINT'),
-                port=6379,
+            self.redis_client = aioredis.from_url(
+                f"redis://{os.getenv('REDIS_ENDPOINT')}:6379",
                 decode_responses=True
             )
             self.redis_client.ping()  # Test connection
@@ -80,7 +79,7 @@ class ChatApp:
     async def broadcast_message(self, message: dict):
         if self.is_redis_available:
             try:
-                self.redis_client.publish('chat_messages', json.dumps(message))
+                await self.redis_client.publish('chat_messages', json.dumps(message))
             except Exception as e:
                 logger.warning(f"Redis broadcast failed: {e}")
                 await self.local_broadcast(message)
@@ -202,9 +201,10 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
             if chat_app.is_redis_available:
                 pubsub = chat_app.redis_client.pubsub()
                 await pubsub.subscribe('chat_messages')
+
                 while True:
                     try:
-                        message = await pubsub.get_message(timeout=1.0)
+                        message = await pubsub.get_message(ignore_subscribe_messages=True)
                         if message and message['type'] == 'message':
                             await websocket.send_json(json.loads(message['data']))
                         await asyncio.sleep(0.1)
@@ -225,8 +225,6 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
         if websocket in chat_app.active_connections:
             chat_app.active_connections.remove(websocket)
         await websocket.close()
-
-
 
 def get_instance_metadata():
     try:
