@@ -180,6 +180,10 @@ Resources:
   # Auto Scaling Group
   AutoScalingGroup:
     Type: AWS::AutoScaling::AutoScalingGroup
+    UpdatePolicy:
+      AutoScalingRollingUpdate:
+        MinInstancesInService: 1
+        MaxBatchSize: 1
     Properties:
       VPCZoneIdentifier:
         - !Ref PublicSubnet1
