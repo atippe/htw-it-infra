@@ -39,12 +39,14 @@ function connectWebSocket() {
         }
     };
 
-    ws.onclose = function () {
-        const instanceInfo = document.getElementById('instance-info');
-        if (instanceInfo) {
-            instanceInfo.innerText = 'Disconnected - Reconnecting...';
+    ws.onclose = function (event) {
+        if (!event.wasClean) {
+            const instanceInfo = document.getElementById('instance-info');
+            if (instanceInfo) {
+                instanceInfo.innerText = 'Disconnected - Reconnecting...';
+            }
+            setTimeout(connectWebSocket, 1000);
         }
-        setTimeout(connectWebSocket, 1000);
     };
 }
 
