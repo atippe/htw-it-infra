@@ -77,7 +77,7 @@ flowchart TB
 
 ### GitHub Workflows
 
-#### 1. Build and push to ECR (`build.yml`)
+#### 1. Build and push to ECR ([build.yml](.github/workflows/build.yml))
 This workflow handles the building and publishing of container images:
 - Triggers on pushes to the main branch
 - Uses OpenID Connect (OIDC) for secure AWS authentication
@@ -88,7 +88,7 @@ This workflow handles the building and publishing of container images:
   - "latest" tag
 - Stores the ECR image URI for the deployment workflow
 
-#### 2. Deploy to CloudFormation (`deploy.yml`)
+#### 2. Deploy to CloudFormation ([deploy.yml](.github/workflows/deploy.yml))
 This workflow manages the deployment of the infrastructure:
 - Triggers automatically after successful image build
 - Uses OIDC for AWS authentication
@@ -99,7 +99,7 @@ This workflow manages the deployment of the infrastructure:
 - Includes error handling and deployment validation
 - Outputs stack information for verification
 
-### AWS CloudFormation Infrastructure
+### AWS CloudFormation Infrastructure ([ec2-docker.yml](cloudformation/ec2-docker.yml))
 
 #### Network Layer
 - VPC with 2 public subnets across different availability zones
