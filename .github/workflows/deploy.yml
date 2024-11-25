@@ -35,7 +35,7 @@ jobs:
           template: cloudformation/ec2-docker.yml
           parameter-overrides: >-
             KeyName=${{ secrets.EC2_KEY_PAIR }},
-            ECRImageURI=${{ env.ECR_IMAGE_URI }},
+            ECRImageURI=${{ steps.login-ecr.outputs.registry }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }},
             DBUsername=${{ secrets.DB_USERNAME }},
             DBPassword=${{ secrets.DB_PASSWORD }}
           capabilities: CAPABILITY_IAM
