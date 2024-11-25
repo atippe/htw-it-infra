@@ -225,6 +225,7 @@ async def websocket_endpoint(websocket: WebSocket, username: str):
             chat_app.active_connections.remove(websocket)
         await websocket.close()
 
+
 def get_instance_metadata():
     try:
         response = requests.get('http://169.254.169.254/latest/meta-data/instance-id', timeout=2)
