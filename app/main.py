@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import List
 import json
 import os
-import aioredis
+from redis import asyncio as aioredis
 import asyncpg
 from fastapi import FastAPI, WebSocket, Request
 from fastapi.staticfiles import StaticFiles
