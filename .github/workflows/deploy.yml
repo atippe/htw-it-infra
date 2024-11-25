@@ -2,10 +2,10 @@ name: Deploy EC2 Instance
 
 on:
   workflow_run:
-    workflows: ["Build and Push to ECR"]
+    workflows: [ "Build and Push to ECR" ]
     types:
       - completed
-    branches: [main]
+    branches: [ main ]
 
 permissions:
   id-token: write
@@ -50,28 +50,6 @@ jobs:
             --stack-name ${{ env.STACK_NAME }} \
             --query 'StackEvents[?ResourceStatus==`CREATE_FAILED`].[LogicalResourceId,ResourceStatusReason]' \
             --output table
-
-      - name: Check if stack was just created
-        id: stack-check
-        run: |
-          STACK_STATUS=$(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query 'Stacks[0].StackStatus' --output text)
-          echo "STACK_STATUS=$STACK_STATUS" >> $GITHUB_OUTPUT
-
-      - name: Start ASG Instance Refresh
-        if: steps.stack-check.outputs.STACK_STATUS != 'CREATE_COMPLETE'
-        run: |
-          # Check if refresh is in progress
-          REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes \
-            --auto-scaling-group-name $(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query 'Stacks[0].Outputs[?OutputKey==`AutoScalingGroupName`].OutputValue' --output text) \
-            --query 'InstanceRefreshes[0].Status' --output text)
-          
-          if [ "$REFRESH_STATUS" != "InProgress" ]; then
-            aws autoscaling start-instance-refresh \
-              --auto-scaling-group-name $(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query 'Stacks[0].Outputs[?OutputKey==`AutoScalingGroupName`].OutputValue' --output text) \
-              --preferences '{"MinHealthyPercentage": 50}'
-          else
-            echo "Instance refresh already in progress, skipping..."
-          fi
 
       - name: Get CloudFormation outputs
         run: |
