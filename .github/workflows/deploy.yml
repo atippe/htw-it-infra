@@ -60,9 +60,18 @@ jobs:
       - name: Start ASG Instance Refresh
         if: steps.stack-check.outputs.STACK_STATUS != 'CREATE_COMPLETE'
         run: |
-          aws autoscaling start-instance-refresh \
+          # Check if refresh is in progress
+          REFRESH_STATUS=$(aws autoscaling describe-instance-refreshes \
             --auto-scaling-group-name $(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query 'Stacks[0].Outputs[?OutputKey==`AutoScalingGroupName`].OutputValue' --output text) \
-            --preferences '{"MinHealthyPercentage": 50}'
+            --query 'InstanceRefreshes[0].Status' --output text)
+          
+          if [ "$REFRESH_STATUS" != "InProgress" ]; then
+            aws autoscaling start-instance-refresh \
+              --auto-scaling-group-name $(aws cloudformation describe-stacks --stack-name ${{ env.STACK_NAME }} --query 'Stacks[0].Outputs[?OutputKey==`AutoScalingGroupName`].OutputValue' --output text) \
+              --preferences '{"MinHealthyPercentage": 50}'
+          else
+            echo "Instance refresh already in progress, skipping..."
+          fi
 
       - name: Get CloudFormation outputs
         run: |
