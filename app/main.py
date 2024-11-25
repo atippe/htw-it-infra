@@ -69,7 +69,7 @@ class ChatApp:
                 f"redis://{os.getenv('REDIS_ENDPOINT')}:6379",
                 decode_responses=True
             )
-            self.redis_client.ping()  # Test connection
+            await self.redis_client.ping()  # Test connection
             self.is_redis_available = True
             logger.info("Redis connection established")
         except Exception as e:
