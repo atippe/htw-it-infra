@@ -5,69 +5,77 @@ This repository contains Infrastructure as Code (IaC) for deploying a scalable c
 ## Architecture Overview
 
 ```mermaid
+---
+config:
+  theme: dark
+  fontFamily: "Arial"
+  fontSize: 14px
+  curve: basis
+---
+%%{init: {'flowchart': {'nodeSpacing': 50, 'rankSpacing': 50}} }%%
 flowchart TB
-    %% Define different arrow styles
-    linkStyle default stroke-width:2px
+    linkStyle default stroke-width:2px,stroke:#666
     
-    subgraph GithubActions["GitHub Actions"]
-        GH[GitHub Repository] ==> |Push to main| W1[Build Workflow]
-        W1 ==> |Triggers| W2[Deploy Workflow]
-        W2 ==> |Deploys| CF[CloudFormation]
-    end
-    
-    subgraph AWSCloud["AWS Cloud"]
-        subgraph VPC["VPC (10.0.0.0/16)"]
-            subgraph Subnet1["Public Subnet 1 (10.0.1.0/24)"]
-                ALB[Application Load Balancer] -.-> |Port 80| ASG1[EC2 t2.micro #1]
-                ASG1 -->|Pull Image| ECR[ECR]
-                ASG1 ==>|Setup| DOCKER1[Docker Instance 1]
-            end
-            
-            subgraph Subnet2["Public Subnet 2 (10.0.2.0/24)"]
-                ALB -.->|Port 80| ASG2[EC2 t2.micro #2]
-                ASG2 -->|Pull Image| ECR
-                ASG2 ==>|Setup| DOCKER2[Docker Instance 2]
-            end
-            
-            IG[Internet Gateway] ==>RT[Route Table]
-            RT ==>|0.0.0.0/0| PS1[Subnet 1]
-            RT ==>|0.0.0.0/0| PS2[Subnet 2]
-            
-            ASG1 & ASG2 -.->|Port 6379| REDIS[Redis cache.t3.micro]
-            ASG1 & ASG2 -.->|Port 5432| RDS[PostgreSQL db.t3.micro]
-        end
-        
-        INET[Internet] ==>|Port 80| ALB
-        CF ==>|Creates| VPC
-    end
-    
-    subgraph SecurityGroups["Security Groups"]
-        SG1[ALB SG - Port 80] -..-> ALB
-        SG2[EC2 SG - Ports 80,22] -..-> ASG1
-        SG2 -..-> ASG2
-        SG3[Redis SG - Port 6379] -..-> REDIS
-        SG4[RDS SG - Port 5432] -..-> RDS
-    end
-    
-    subgraph IAMRoles["IAM & Roles"]
-        EC2ROLE[EC2 Role] ==>|Assume| ASG1 & ASG2
-        EC2ROLE ==>|Allow| ECRPULL[ECR Pull]
-    end
-    
-    subgraph AutoScaling["Auto Scaling"]
-        CPU[CPU 70%] -.->|Scale 2-4| ASG1 & ASG2
-        HEALTH[Health Check /] -.->|30s| ALB
-        ROLL[Rolling 1:1] -.->ASG1 & ASG2
+    subgraph GithubActions["fa:fa-github GitHub Actions"]
+        direction TB
+        GH["fa:fa-code-branch GitHub Repository"] ==>|"Push to main"| W1["fa:fa-cogs Build Workflow"]
+        W1 ==>|"Triggers"| W2["fa:fa-rocket Deploy Workflow"]
+        W2 ==>|"Deploys"| CF["fa:fa-cloud CloudFormation"]
     end
 
-    subgraph DBGroups["Database Groups"]
-        DBSUB[DB Subnet] ==>RDS
-        REDISSUB[Redis Subnet] ==>REDIS
+    subgraph AWSCloud["fab:fa-aws AWS Cloud"]
+        subgraph VPC["fa:fa-network-wired VPC (10.0.0.0/16)"]
+            IG["fa:fa-globe Internet Gateway"] ==>RT["fa:fa-route Route Table"]
+            RT ==>|"0.0.0.0/0"| PS1["fa:fa-network-wired Subnet 1"]
+            RT ==>|"0.0.0.0/0"| PS2["fa:fa-network-wired Subnet 2"]
+
+            subgraph Subnet1["fa:fa-subnet Public Subnet 1 (10.0.1.0/24)"]
+                ALB["fa:fa-balance-scale Load Balancer"] -.->|"Port 80"| ASG1["fa:fa-server EC2 t2.micro #1"]
+                ASG1 -->|"Pull Image"| ECR["fa:fa-docker ECR"]
+                ASG1 ==>|"Setup"| DOCKER1["fa:fa-docker Docker Instance 1"]
+            end
+
+            subgraph Subnet2["fa:fa-subnet Public Subnet 2 (10.0.2.0/24)"]
+                ALB -.->|"Port 80"| ASG2["fa:fa-server EC2 t2.micro #2"]
+                ASG2 -->|"Pull Image"| ECR
+                ASG2 ==>|"Setup"| DOCKER2["fa:fa-docker Docker Instance 2"]
+            end
+
+            ASG1 & ASG2 -.->|"Port 6379"| REDIS["fa:fa-database Redis cache.t3.micro"]
+            ASG1 & ASG2 -.->|"Port 5432"| RDS["fa:fa-database PostgreSQL db.t3.micro"]
+        end
+        INET["fa:fa-globe Internet"] ==>|"Port 80"| ALB
+        CF ==>|"Creates"| VPC
+    end
+
+    subgraph SecurityGroups["fa:fa-shield-alt Security Groups"]
+        direction LR
+        SG1["fa:fa-lock ALB SG - Port 80"] -..-> ALB
+        SG2["fa:fa-lock EC2 SG - Ports 80,22"] -..-> ASG1 & ASG2
+        SG3["fa:fa-lock Redis SG - Port 6379"] -..-> REDIS
+        SG4["fa:fa-lock RDS SG - Port 5432"] -..-> RDS
+    end
+
+    subgraph IAMRoles["fa:fa-users IAM & Roles"]
+        EC2ROLE["fa:fa-user-shield EC2 Role"] ==>|"Assume"| ASG1 & ASG2
+        EC2ROLE ==>|"Allow"| ECRPULL["fa:fa-download ECR Pull"]
+    end
+
+    subgraph AutoScaling["fa:fa-chart-line Auto Scaling"]
+        CPU["fa:fa-microchip CPU 70%"] -.->|"Scale 2-4"| ASG1 & ASG2
+        HEALTH["fa:fa-heartbeat Health Check /"] -.->|"30s"| ALB
+        ROLL["fa:fa-sync Rolling 1:1"] -.->ASG1 & ASG2
+    end
+
+    subgraph DBGroups["fa:fa-database Database Groups"]
+        DBSUB["fa:fa-database DB Subnet"] ==>RDS
+        REDISSUB["fa:fa-database Redis Subnet"] ==>REDIS
     end
 
     classDef aws fill:#FF9900,stroke:#232F3E,stroke-width:2px,color:#000000
     classDef security fill:#DD3522,stroke:#232F3E,stroke-width:2px,color:#FFFFFF
     classDef network fill:#7AA116,stroke:#232F3E,stroke-width:2px,color:#FFFFFF
+    
     class ALB,ECR,REDIS,RDS,ASG1,ASG2 aws
     class SG1,SG2,SG3,SG4 security
     class IG,RT,PS1,PS2 network
