@@ -15,7 +15,6 @@ import logging
 
 from starlette.websockets import WebSocketDisconnect
 
-# Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -69,7 +68,7 @@ class ChatApp:
                 f"redis://{os.getenv('REDIS_ENDPOINT')}:6379",
                 decode_responses=True
             )
-            await self.redis_client.ping()  # Test connection
+            await self.redis_client.ping()
             self.is_redis_available = True
             logger.info("Redis connection established")
         except Exception as e:
