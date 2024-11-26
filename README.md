@@ -1,4 +1,4 @@
-# AWS Infrastructure for Scalable Chat Application
+# AWS Infrastructure for Scalable Chat Applicationa
 
 This repository contains Infrastructure as Code (IaC) for deploying a scalable chat application on AWS using CloudFormation and GitHub Actions. The project has two main infrastructure components: GitHub Actions workflows for CI/CD and AWS CloudFormation for resource provisioning.
 
