@@ -325,15 +325,3 @@ Outputs:
   LoadBalancerDNS:
     Description: DNS name of the Application Load Balancer
     Value: !GetAtt ApplicationLoadBalancer.DNSName
-
-  AutoScalingGroupName:
-    Description: Name of the Auto Scaling Group
-    Value: !Ref AutoScalingGroup
-
-  RedisEndpoint:
-    Description: Redis cluster endpoint
-    Value: !GetAtt RedisCluster.RedisEndpoint.Address
-
-  DatabaseEndpoint:
-    Description: PostgreSQL endpoint
-    Value: !GetAtt PostgresDB.Endpoint.Address
