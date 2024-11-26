@@ -165,12 +165,17 @@ This workflow manages the deployment of the infrastructure:
 
 ## Setup Instructions
 
-### 1. Configure GitHub Repository Secrets
+### 1. Configure GitHub Repository Secrets and Variables
 
-Navigate to Settings > Secrets and variables > Actions and add the following secrets:
+Navigate to Settings > Secrets and variables > Actions and configure the following:
 
+**Repository Variables (Variables > New repository variable):**
 ```
 AWS_REGION              # e.g., eu-west-1
+```
+
+**Repository Secrets (Secrets > New repository secret):**
+```
 AWS_ROLE_ARN           # arn:aws:iam::{account}:role/{role-name}
 ECR_REPOSITORY         # repository-name
 ECR_IMAGE_URI         # {account}.dkr.ecr.{region}.amazonaws.com/{repo}
