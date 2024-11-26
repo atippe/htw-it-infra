@@ -2,7 +2,7 @@
 
 This repository contains Infrastructure as Code (IaC) for deploying a scalable chat application on AWS using CloudFormation and GitHub Actions. The project has two main infrastructure components: GitHub Actions workflows for CI/CD and AWS CloudFormation for resource provisioning.
 
-## Architecture Overview ([diagram.svg](diagram.svg))
+## Architecture Overview ([diagram.png](diagram.png))
 
 ```mermaid
 ---
